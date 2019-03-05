@@ -1,15 +1,13 @@
-import { environment } from './../../../../environments/environment';
-
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Service } from '@app/shared/services';
+import { MoneyHttp } from '@app/modules/seguranca/money-http';
 import { Pessoa } from '@pessoas/models';
 import { Observable } from 'rxjs/Observable';
 import { map } from 'rxjs/operators';
 import { IPessoaService } from '.';
 import { PessoaFiltro } from '../models';
-import { Utils } from '@app/core/utils';
-import { MoneyHttp } from '@app/modules/seguranca/money-http';
+import { environment } from './../../../../environments/environment';
+
 
 
 @Injectable({
@@ -25,13 +23,15 @@ export class PessoaService implements IPessoaService {
 
   pesquisar = (filtro: PessoaFiltro): Observable<any> => {
 
-    let params = new HttpParams();
-
-    params = params.set('page', filtro.pagina.toString());
-    params = params.set('size', filtro.itensPorPagina.toString());
+    let params = new HttpParams({
+      fromObject: {
+        page: filtro.pagina.toString(),
+        size: filtro.itensPorPagina.toString()
+      }
+    });
 
     if (filtro.nome) {
-      params = params.set('nome', filtro.nome);
+      params = params.append('nome', filtro.nome);
     }
 
     return this.http.get<any>(this.pessoasUrl, { params }).pipe(map(resp => {
