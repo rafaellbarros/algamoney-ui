@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
+import { JwtModule } from '@auth0/angular-jwt';
 import { ButtonModule } from 'primeng/components/button/button';
 import { InputTextModule } from 'primeng/components/inputtext/inputtext';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+
 import { LoginFormComponent } from './components/login-form';
 import { SegurancaRoutingModule } from './seguranca-routing.module';
-import { JwtModule } from '@auth0/angular-jwt';
 import { environment } from 'environments/environment';
 
 export function tokenGetter() {
@@ -19,6 +22,7 @@ export function tokenGetter() {
     FormsModule,
     InputTextModule,
     ButtonModule,
+    ProgressSpinnerModule,
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,

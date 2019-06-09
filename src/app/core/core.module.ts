@@ -1,14 +1,16 @@
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 import localePt from '@angular/common/locales/pt';
 import { LOCALE_ID, NgModule } from '@angular/core';
-import { ToastyModule } from 'ng2-toasty';
+
 import { ConfirmationService } from 'primeng/components/common/api';
 import { ConfirmDialogModule } from 'primeng/components/confirmdialog/confirmdialog';
-import { SharedModule } from '../shared/shared.module';
-import { NaoAutorizadoComponent, PaginaNaoEncontradaComponent } from './components/inlines';
+import { GrowlModule } from 'primeng/primeng';
+import { MessageService } from 'primeng/components/common/messageservice'
+
 import { NavbarComponent } from './components/navbar';
-import { RouterModule } from '@angular/router';
+import { NaoAutorizadoComponent, PaginaNaoEncontradaComponent } from './components/inlines';
 
 registerLocaleData(localePt);
 
@@ -16,18 +18,20 @@ registerLocaleData(localePt);
   declarations: [NavbarComponent, PaginaNaoEncontradaComponent, NaoAutorizadoComponent],
   imports: [
     CommonModule,
-    ToastyModule.forRoot(),
-    ConfirmDialogModule,
+    HttpClientModule,
     RouterModule,
-    HttpClientModule
+
+    GrowlModule,
+    ConfirmDialogModule,
   ],
   exports: [
     NavbarComponent,
-    ToastyModule,
+    GrowlModule,
     ConfirmDialogModule
   ],
   providers: [
     ConfirmationService,
+    MessageService,
     { provide: LOCALE_ID, useValue: 'pt-BR'}
   ],
 })

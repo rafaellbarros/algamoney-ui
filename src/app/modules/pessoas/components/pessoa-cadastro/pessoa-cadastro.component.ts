@@ -1,13 +1,13 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ErrorHandlerService } from '@app/core/services/error-handler.service';
-import { Pessoa } from '@app/modules/pessoas/models';
-import { PessoaService } from '@pessoas/services';
-import { ToastyService } from 'ng2-toasty';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { PessoaCadastroComponentImpl, IPessoaCadastroComponentImpl } from './impl';
 
+import { MessageService } from 'primeng/components/common/messageservice';
+
+import { ErrorHandlerService } from '@app/core/services/error-handler.service';
+import { PessoaService } from '@pessoas/services';
+import { PessoaCadastroComponentImpl, IPessoaCadastroComponentImpl } from './impl';
 
 @Component({
   selector: 'pessoa-cadastro',
@@ -23,7 +23,7 @@ export class PessoaCadastroComponent implements OnInit, IPessoaCadastroComponent
     private route: ActivatedRoute,
     private router: Router,
     private pessoaService: PessoaService,
-    private toasty: ToastyService,
+    private messageService: MessageService,
     private errorHandler: ErrorHandlerService
   ) {
     this.impl = new PessoaCadastroComponentImpl(
@@ -31,12 +31,16 @@ export class PessoaCadastroComponent implements OnInit, IPessoaCadastroComponent
       route,
       router,
       pessoaService,
-      toasty,
+      messageService,
       errorHandler);
   }
 
   ngOnInit(): void {
     this.impl.ngOnInit();
+  }
+
+  carregarCidades() {
+    this.impl.carregarCidades();
   }
 
   salvar(form: FormControl): void {
@@ -45,10 +49,6 @@ export class PessoaCadastroComponent implements OnInit, IPessoaCadastroComponent
 
   adicionarPessoa(form: FormControl): void {
     this.impl.adicionarPessoa(form);
-  }
-
-  atualizarPessoa(form: FormControl): void {
-    this.impl.atualizarPessoa(form);
   }
 
   nova(form: FormControl): void {

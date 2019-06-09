@@ -1,8 +1,8 @@
-import { environment } from './../../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { MoneyHttp } from '../money-http';
 import { AuthService } from './auth.service';
 import { map } from 'rxjs/operators';
+import { environment } from './../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

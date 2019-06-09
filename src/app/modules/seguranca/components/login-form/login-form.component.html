@@ -18,6 +18,11 @@
       <div class="ui-g-12">
         <button label="Login" type="submit" pButton class="ui-button-info" [disabled]="f.invalid"
          (click)="login(usuario.value, senha.value); senha.value = '';"></button>
+
+         <p class="text-center">
+           <p-progressSpinner  [hidden]="!loginEmAndamento"
+            [style]="{ width: '25px', height: '25px' }"></p-progressSpinner>
+         </p>
       </div>
 
     </div>

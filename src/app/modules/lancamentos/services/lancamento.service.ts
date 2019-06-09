@@ -4,14 +4,14 @@ import { MoneyHttp } from '@app/modules/seguranca/money-http';
 import * as moment from 'moment';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ILancamentoService } from '.';
+import 'rxjs/add/operator/map';
 import { Lancamento, LancamentoFiltro } from '../models';
 import { environment } from './../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-export class LancamentoService implements ILancamentoService {
+export class LancamentoService {
 
   private lancamentosUrl: string;
   private DATE_FORMAT: string;
@@ -19,6 +19,10 @@ export class LancamentoService implements ILancamentoService {
   constructor(private http: MoneyHttp) {
     this.lancamentosUrl = `${environment.apiUrl}/lancamentos`;
     this.DATE_FORMAT = 'YYYY-MM-DD';
+  }
+
+  urlUploadAnexo(): string {
+    return `${this.lancamentosUrl}/anexo`;
   }
 
   pesquisar = (filtro: LancamentoFiltro): Observable<any> => {
@@ -54,13 +58,11 @@ export class LancamentoService implements ILancamentoService {
     }));
   }
 
-  excluir = (codigo: number): Observable<void> => {
-    return this.http.delete(`${this.lancamentosUrl}/${codigo}`).map(() => null);
-  }
+  excluir = (codigo: number): Observable<void> =>
+    this.http.delete(`${this.lancamentosUrl}/${codigo}`)
 
-  adicionar = (lancamento: Lancamento): Observable<Lancamento> => {
-    return this.http.post<any>(this.lancamentosUrl, lancamento);
-  }
+  adicionar = (lancamento: Lancamento): Observable<Lancamento> =>
+    this.http.post<any>(this.lancamentosUrl, lancamento)
 
   atualizar = (lancamento: Lancamento): Observable<Lancamento> => {
     return this.http.put<Lancamento>(

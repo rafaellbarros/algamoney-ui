@@ -1,17 +1,14 @@
 import { Injectable } from '@angular/core';
-import { MoneyHttp } from '@app/modules/seguranca/money-http';
-import { environment } from 'environments/environment';
-import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators';
-import { Categoria } from './categoria.model';
-import { ICategoriaService } from './icategoria.service';
+import { environment } from 'environments/environment';
 
+import { MoneyHttp } from '@app/modules/seguranca/money-http';
+import { Categoria } from './categoria.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class CategoriaService implements ICategoriaService {
+export class CategoriaService {
 
   private categoriasUrl: string;
 
@@ -20,8 +17,7 @@ export class CategoriaService implements ICategoriaService {
   }
 
   listarTodas = (): Observable<Categoria[]> => {
-    return this.http.get<Categoria[]>(this.categoriasUrl)
-      .pipe(map(categorias => categorias));
+    return this.http.get<Categoria[]>(this.categoriasUrl);
   }
 
   /*

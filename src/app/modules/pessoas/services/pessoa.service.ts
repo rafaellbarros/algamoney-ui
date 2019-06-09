@@ -1,24 +1,27 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { MoneyHttp } from '@app/modules/seguranca/money-http';
-import { Pessoa } from '@pessoas/models';
 import { Observable } from 'rxjs/Observable';
 import { map } from 'rxjs/operators';
-import { IPessoaService } from '.';
-import { PessoaFiltro } from '../models';
 import { environment } from './../../../../environments/environment';
 
+import { MoneyHttp } from '@app/modules/seguranca/money-http';
+import { Pessoa, Estado, Cidade } from '@pessoas/models';
+import { PessoaFiltro } from '../models';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class PessoaService implements IPessoaService {
+export class PessoaService  {
 
   private pessoasUrl: string;
+  private cidadesUrl: string;
+  private estadosUrl: string;
 
   constructor(private http: MoneyHttp) {
     this.pessoasUrl = `${environment.apiUrl}/pessoas`;
+    this.cidadesUrl = `${environment.apiUrl}/cidades`;
+    this.estadosUrl = `${environment.apiUrl}/estados`;
   }
 
   pesquisar = (filtro: PessoaFiltro): Observable<any> => {
@@ -54,25 +57,33 @@ export class PessoaService implements IPessoaService {
   }
 
   excluir = (codigo: number): Observable<void> =>
-    this.http.delete(`${this.pessoasUrl}/${codigo}`).pipe(map(() => null))
+    this.http.delete(`${this.pessoasUrl}/${codigo}`);
 
   mudarStatus = (codigo: number, novoStatus: boolean) => {
     const headers = new HttpHeaders({'Content-Type' : 'application/json'});
     const options = {
       headers
     };
-    return this.http.put<any>(`${this.pessoasUrl}/${codigo}/ativo`, novoStatus, options).pipe(map(() => null));
+    return this.http.put<any>(`${this.pessoasUrl}/${codigo}/ativo`, novoStatus, options);
   }
 
-  adicionar = (pessoa: Pessoa): Observable<Pessoa> => {
-    return this.http.post<Pessoa>(this.pessoasUrl, pessoa);
-  }
+  adicionar = (pessoa: Pessoa): Observable<Pessoa> =>
+    this.http.post<Pessoa>(this.pessoasUrl, pessoa)
 
-  atualizar(pessoa: Pessoa): Observable<Pessoa> {
-    return this.http.put<Pessoa>(`${this.pessoasUrl}/${pessoa.codigo}`, pessoa);
-  }
+  atualizar = (pessoa: Pessoa): Observable<Pessoa> =>
+    this.http.put<Pessoa>(`${this.pessoasUrl}/${pessoa.codigo}`, pessoa)
 
-  buscarPorCodigo(codigo: number): Observable<Pessoa> {
-    return this.http.get<Pessoa>(`${this.pessoasUrl}/${codigo}`);
+
+  buscarPorCodigo = (codigo: number): Observable<Pessoa> =>
+    this.http.get<Pessoa>(`${this.pessoasUrl}/${codigo}`)
+
+  listarEstados = (): Observable<Estado[]> => this.http.get(this.estadosUrl);
+
+  pesquisarCidades(estado): Observable<Cidade[]> {
+
+    let params = new HttpParams();
+    params = params.append('estado', estado);
+
+    return this.http.get(this.cidadesUrl, { params });
   }
 }

@@ -1,19 +1,19 @@
-import { environment } from './../../../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError, of, pipe } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { environment } from './../../../../environments/environment';
 
 import { JwtHelperService } from '@auth0/angular-jwt';
 
 import { Utils } from '@app/core/utils';
-import { IAuthService } from './iauth.service';
+
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService implements IAuthService {
+export class AuthService {
 
   private oauthTokenUrl: string;
   public jwtPayload: any;

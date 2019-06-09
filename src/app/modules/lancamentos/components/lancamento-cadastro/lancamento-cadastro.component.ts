@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { CategoriaService } from '@app/categorias';
-import { ErrorHandlerService } from '@app/core/services/error-handler.service';
-import { Lancamento } from '@lancamentos/models';
-import { LancamentoService } from '@lancamentos/services';
-import { PessoaService } from '@pessoas/services';
-import { ToastyService } from 'ng2-toasty';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
+
+import { MessageService } from 'primeng/components/common/messageservice';
+
+import { ErrorHandlerService } from '@app/core/services/error-handler.service';
+import { Lancamento } from '@lancamentos/models';
+import { CategoriaService } from '@shared/services/categorias';
+import { LancamentoService } from '@lancamentos/services';
+import { PessoaService } from '@pessoas/services';
+
 
 @Component({
   selector: 'lancamento-cadastro',
@@ -23,8 +26,8 @@ export class LancamentoCadastroComponent implements OnInit {
 
   categorias = [];
   pessoas = [];
-  lancamento = new Lancamento();
-
+  formulario: FormGroup;
+  uploadEmAndamento = false;
 
   constructor(
     private title: Title,
@@ -33,10 +36,12 @@ export class LancamentoCadastroComponent implements OnInit {
     private categoriaService: CategoriaService,
     private pessoaService: PessoaService,
     private lancamentoService: LancamentoService,
-    private toaty: ToastyService,
-    private errorHandler: ErrorHandlerService) { }
+    private messageService: MessageService ,
+    private errorHandler: ErrorHandlerService,
+    private fb: FormBuilder) { }
 
   ngOnInit() {
+    this.configurarFormulario();
     const { codigo } = this.route.snapshot.params;
 
     this.setTitle('Novo lançamento');
@@ -47,32 +52,111 @@ export class LancamentoCadastroComponent implements OnInit {
     this.carregarPessoas();
   }
 
-  salvar(form: FormControl) {
+  antesUploadAnexo(event) {
+    this.uploadEmAndamento = true;
+  }
+
+  aoTerminarUploadAnexo(event) {
+
+    const { body } = event.originalEvent;
+
+    this.formulario.patchValue({
+      anexo: body.nome,
+      urlAnexo: body.url
+    });
+
+    this.uploadEmAndamento = false;
+
+  }
+
+  erroUpload(event) {
+    this.messageService.add({ severity: 'error', detail: 'Erro ao tentar enviar anexo!' });
+
+    this.uploadEmAndamento = false;
+  }
+
+  removerAnexo() {
+    this.formulario.patchValue({
+      anexo: null,
+      urlAnexo: null,
+    });
+  }
+
+  get nomeAnexo() {
+    const nome = this.formulario.get('anexo').value;
+
+    if (nome) {
+      return nome.substring(nome.indexOf('_') + 1, nome.length);
+    }
+
+    return '';
+  }
+
+  get urlUploadAnexo() {
+    return this.lancamentoService.urlUploadAnexo();
+  }
+
+
+
+  configurarFormulario() {
+    this.formulario = this.fb.group({
+      codigo: [],
+      tipo: ['RECEITA', Validators.required],
+      dataVencimento: [null, Validators.required],
+      dataPagamento: [],
+      descricao: [null, [this.validarObrigatoriedade, this.validarTamahoMinimo(5)]],
+      valor: [null, Validators.required],
+      categoria: this.fb.group({
+        codigo: [null, Validators.required],
+        nome: []
+      }),
+      pessoa: this.fb.group({
+        codigo: [null, Validators.required],
+        nome: [],
+      }),
+      observacao: [],
+      anexo: [],
+      urlAnexo: []
+    });
+  }
+
+  validarObrigatoriedade(input: FormControl) {
+    return (input.value ? null : { obrigatoriedade: true });
+  }
+
+  validarTamahoMinimo(valor: number) {
+    return (input: FormControl) => {
+      return (!input.value || input.value.length >= valor) ? null : { tamanhoMinimo: { tamanho: valor }}
+    };
+  }
+
+  salvar() {
     if (this.editando) {
-      this.atualizarLancamento(form);
+      this.atualizarLancamento();
     } else {
-      this.adicionarLancamento(form);
+      this.adicionarLancamento();
     }
   }
 
-  adicionarLancamento(form: FormControl) {
-    this.lancamentoService.adicionar(this.lancamento).subscribe(lancamento => {
-      this.toaty.success('Lançamento adicionando com sucesso!');
+  adicionarLancamento() {
+    this.lancamentoService.adicionar(this.formulario.value).subscribe(lancamento => {
+      this.messageService.add({ severity: 'success', detail: 'Lançamento adicionando com sucesso!' });
+
       this.router.navigate(['/lancamentos', lancamento.codigo]);
     }, error => this.errorHandler.handle(error));
   }
 
-  atualizarLancamento(form: FormControl) {
-    this.lancamentoService.atualizar(this.lancamento).subscribe(lancamento => {
-      this.lancamento = lancamento;
+  atualizarLancamento() {
+    this.lancamentoService.atualizar(this.formulario.value).subscribe(lancamento => {
+      this.formulario.patchValue(lancamento);
 
-      this.toaty.success('Lançamento alterado com sucesso!');
+      this.messageService.add({ severity: 'success', detail: 'Lançamento alterado com sucesso!' });
       this.atualizarTituloEdicao();
     }, error => this.errorHandler.handle(error));
   }
 
-  novo(form: FormControl) {
-    form.reset();
+  novo() {
+    this.formulario.reset();
 
     setTimeout(function () {
       this.lancamento = new Lancamento();
@@ -82,13 +166,14 @@ export class LancamentoCadastroComponent implements OnInit {
   }
 
   get editando() {
-    return Boolean(this.lancamento.codigo);
+    return Boolean(this.formulario.get('codigo').value);
   }
 
   private carregarLancamento = (codigo: number) =>
     this.lancamentoService.buscarPorCodigo(codigo)
       .subscribe(lancamento => {
-        this.lancamento = lancamento;
+        // this.lancamento = lancamento;
+        this.formulario.patchValue(lancamento);
         this.atualizarTituloEdicao();
       }, error => this.errorHandler.handle(error))
 
@@ -107,7 +192,7 @@ export class LancamentoCadastroComponent implements OnInit {
       )
 
   private atualizarTituloEdicao = () =>
-    this.setTitle(`Edição de lançamento: ${this.lancamento.descricao}`)
+    this.setTitle(`Edição de lançamento: ${this.formulario.get('descricao').value}`)
 
   private setTitle = (title: string) => this.title.setTitle(title);
 
